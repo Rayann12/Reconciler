@@ -39,6 +39,18 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
+  
+  const express = require('express');
+  const bodyParser = require('body-parser');
+  const cors = require('cors');
+  const fs = require('fs').promises;
+  const app = express();
+  const port = 3000; 
+
+  app.listen(port,() => {console.log(`Listening on PORT: ${port}`)});
+  app.use(cors());
+  app.use(bodyParser.json());
+
   let Map = {};
   function RandomIDGen(){
     let opt = true;
@@ -53,28 +65,13 @@
     return RandomID;
   }
   
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  const fs = require('fs').promises;
-  
-  
-  const app = express();
-  const port = 3000; 
-  app.listen(port,() => {console.log(`Listening on PORT: ${port}`)});
-  
-  
-  app.use(bodyParser.json());
-  
-  
   app.get("/", (req,res) => {
-    res.sendFile(__dirname + "/index.html")
+    res.sendFile(__dirname + "/index.html");
   })
   
 
   app.get("/todos", (req,res) => {
-    let ret = Object.values(Map);
-    console.log(ret)
-    res.status(200).json(ret);
+    res.status(200).json(Map);
   })
   
   app.get("/todos/:id", (req,res) => {
@@ -88,10 +85,8 @@
     }
   })
   
-  app.post("/todos",(req,res) => {
+  app.post("/todos", (req,res) => {
     let l = RandomIDGen();
-    console.log(req.body);
-    console.log(typeof req.body);
     Map[l] = req.body;
     Map[l].id = l;
     let obj = {
@@ -126,7 +121,7 @@
   })
   
   app.use((req,res,next) => {
-    req.status(404);
+    res.status(404);
   })
   
   module.exports = app;

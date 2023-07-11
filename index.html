@@ -4,16 +4,93 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
     <title>Todo List</title>
 </head>
 <body>
     Welcome
-    <form action="">
+    <div>
         <input type="text" name = "title" id = "title" value="title">
         <input type="text" name = "description" id = "description" value="description">
-        <button type="submit" onsubmit="addition()">Add Todo</button>
-    </form>
+        <button type="submit" onclick="addition()">Add Todo</button>
+    </div>
     <div id = "MainArea"></div>
+    <script>
+        function deletion(id){
+            fetch("http://localhost:3000/todos/"+id, {method: "DELETE", 
+            headers: {'Content-Type': 'application/json'}});
+        }
+        function addition(){
+            title = document.getElementById("title").value;
+            description = document.getElementById("description").value;
+            fetch("http://localhost:3000/todos", 
+            {method: "POST", headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({"title": title, "description": description})});
+        }
+        function updation(id){
+            title = document.getElementById("title").value;
+            description = document.getElementById("description").value;
+            fetch("http://localhost:3000/todos/"+id, 
+            {method: "PUT", headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({"title": title, "description": description})});
+        }
+        function add(key){
+            const newElement = document.createElement('div');
+            const titleSpan = document.createElement('span');
+            const descriptionSpan = document.createElement('span');
+            const deleteButton = document.createElement('button');
+            const updateButton = document.createElement('button');
+            titleSpan.innerHTML = currState[key].title;
+            descriptionSpan.innerHTML = currState[key].description;
+            deleteButton.innerHTML = "Delete";
+            deleteButton.setAttribute('onclick', `deletion(${key})`);
+            updateButton.innerHTML = "Update";
+            updateButton.setAttribute('onclick', `updation(${key})`);
+            newElement.appendChild(titleSpan);
+            newElement.appendChild(descriptionSpan);
+            newElement.appendChild(deleteButton);
+            newElement.appendChild(updateButton);
+            newElement.setAttribute('id', `${key}`);
+            document.getElementById("MainArea").appendChild(newElement);
+        }
+        function del(key){
+            const deletedChild = document.getElementById(key);
+            document.getElementById("MainArea").removeChild(deletedChild);
+        }
+        function update(key){
+            const updatedChild = document.getElementById(key);
+            const Spans = updatedChild.querySelectorAll('span');
+            const titleSpan = Spans[0];
+            const descriptionSpan = Spans[1];
+            titleSpan.innerHTML = currState[key].title;
+            descriptionSpan.innerHTML = currState[key].description;
+        }
+
+        let prevState = {};
+        let currState = {};
+        async function getData(){
+            const response= await fetch("http://localhost:3000/todos",
+            {method: "GET", headers: {'Content-Type': 'application/json'}});
+            currState = await response.json();
+            for (let key in currState){
+                if (!prevState.hasOwnProperty(key)){
+                    add(key);
+                }
+                else{
+                    if(currState[key] !== prevState[key]){
+                        update(key);
+                    }
+                }
+            }
+            for (let key in prevState){
+                if (!currState.hasOwnProperty(key)){
+                    del(key);
+                }
+            }
+            prevState = currState;
+        }
+        const start = setInterval(getData, 100);
+    </script>
 </body>
-<script src="index.js"></script>
 </html>
