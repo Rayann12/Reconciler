@@ -78,7 +78,7 @@
                     add(key);
                 }
                 else{
-                    if(currState[key] !== prevState[key]){
+                    if(currState[key].title !== prevState[key] || currState[key].description !== prevState[key].description){
                         update(key);
                     }
                 }
